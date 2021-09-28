@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-v1
+  namespace: kuma-demo
+spec:
+  selector:
+    matchLabels:
+      app: redis
+      version: v1
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: redis
+        version: v1
+    spec:
+      containers:
+        - name: redis
+          image: "redis"
+          ports:
+            - name: tcp
+              containerPort: 6379
+          lifecycle:
+            postStart:
+              exec:
+                command: ["/usr/local/bin/redis-cli", "set", "zone", "local"]
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-v2
+  namespace: kuma-demo
+spec:
+  selector:
+    matchLabels:
+      app: redis
+      version: v2
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: redis
+        version: v2
+    spec:
+      containers:
+        - name: redis
+          image: "redis"
+          ports:
+            - name: tcp
+              containerPort: 6379
+          lifecycle:
+            postStart:
+              exec:
+                command: ["/usr/local/bin/redis-cli", "set", "zone", "local"]
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+  namespace: kuma-demo
+spec:
+  selector:
+    app: redis
+  ports:
+  - protocol: TCP
+    port: 6379
